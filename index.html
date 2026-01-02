@@ -2,46 +2,34 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Vocabulaire Interactif - Master Player</title>
+    <title>Vocabulaire Interactief - Master Player</title>
     <style>
         :root { --primary: #3498db; --success: #2ecc71; --danger: #e74c3c; --bg: #121212; --card: #1e1e1e; --accent: #f1c40f; }
         body { background-color: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; }
         #container { width: 95%; max-width: 1100px; margin: 40px auto; text-align: center; }
-        
-        /* Dropdown Styling */
         .selector-container { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #333; }
         select { padding: 12px; background: #333; color: white; border-radius: 6px; border: 1px solid var(--primary); font-size: 16px; width: 300px; cursor: pointer; }
-
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
         .set-card { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #333; transition: 0.3s; }
-        .set-card:hover { border-color: var(--primary); }
-        
         .btn { background: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; font-size: 15px; width: 100%; margin-bottom: 8px; transition: 0.3s; }
         .btn-edit { background: #444; }
-        .btn:hover { filter: brightness(1.2); }
-
         .screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 100; justify-content: center; align-items: center; flex-direction: column; }
         #modal { background: rgba(0,0,0,0.85); }
         .modal-content { background: #222; padding: 25px; border-radius: 15px; width: 90%; max-width: 600px; }
-
-        .edit-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-        .edit-table input { background: #333; color: white; border: 1px solid #555; padding: 5px; width: 95%; border-radius: 4px; }
         .scroll-area { max-height: 400px; overflow-y: auto; border: 1px solid #333; }
-
-        #word-display { font-size: 80px; font-weight: bold; margin: 40px 0; color: var(--accent); text-shadow: 2px 2px 10px rgba(0,0,0,0.5); padding: 0 20px; }
+        .edit-table { width: 100%; border-collapse: collapse; }
+        .edit-table input { background: #333; color: white; border: 1px solid #555; padding: 5px; width: 95%; }
+        #word-display { font-size: 70px; font-weight: bold; margin: 40px 0; color: var(--accent); text-align: center; min-height: 100px; }
         #timer-container { width: 70%; height: 12px; background: #333; border-radius: 6px; margin: 20px auto; overflow: hidden; }
         #timer-bar { width: 100%; height: 100%; background: var(--success); transition: width 1s linear; }
-
-        table { width: 100%; border-collapse: collapse; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { padding: 10px; border: 1px solid #444; text-align: left; }
-        th { background: #333; }
     </style>
 </head>
 <body>
 
 <div id="container">
-    <h1>Vocabulaire Interactif</h1>
-    
+    <h1>Vocabulaire Interactief</h1>
     <div class="selector-container">
         <label style="display:block; margin-bottom:10px; color:#aaa;">Kies een hoofdstuk:</label>
         <select id="thema-select" onchange="laadThema(this.value)">
@@ -50,80 +38,59 @@
             <option value="pelckmans">Grote Woordenlijst (Pelckmans)</option>
         </select>
     </div>
-
     <div class="grid" id="set-grid"></div>
 </div>
 
 <div id="modal" class="screen" onclick="closeModal(event)">
     <div class="modal-content" onclick="event.stopPropagation()">
-        <h2 id="modal-title" style="color: var(--primary);">Modifier</h2>
-        <div class="scroll-area">
-            <table class="edit-table">
-                <thead><tr><th>NL</th><th>FR</th></tr></thead>
-                <tbody id="edit-tbody"></tbody>
-            </table>
-        </div>
-        <button class="btn" style="background:var(--success); margin-top:15px;" onclick="saveAndClose()">Opslaan & Sluiten</button>
+        <h2 id="modal-title">Bewerken</h2>
+        <div class="scroll-area"><table class="edit-table"><tbody id="edit-tbody"></tbody></table></div>
+        <button class="btn" style="background:var(--success); margin-top:15px;" onclick="saveAndClose()">Opslaan</button>
     </div>
 </div>
 
 <div id="exercise" class="screen">
-    <div id="info-fr" style="font-size: 1.2rem; color: #aaa;"></div>
+    <div id="info-fr" style="color: #aaa;"></div>
     <div id="timer-container"><div id="timer-bar"></div></div>
-    <div id="word-display">Laden...</div>
+    <div id="word-display"></div>
     <div style="display:flex; gap:10px;">
         <button class="btn" style="width:140px; background:#555;" id="pause-btn" onclick="togglePause()">Pause</button>
-        <button class="btn" style="width:140px; background:var(--danger);" onclick="location.reload()">Stoppen</button>
+        <button class="btn" style="width:140px; background:var(--danger);" onclick="location.reload()">Stop</button>
     </div>
 </div>
 
 <div id="result" class="screen">
-    <h2 style="color: var(--success);">Overzicht van deze set</h2>
-    <div style="width: 80%; max-height: 70vh; overflow-y: auto; background: #1e1e1e; padding: 10px; border-radius: 10px;">
-        <table>
-            <thead><tr><th>Nederlands</th><th>Français</th></tr></thead>
-            <tbody id="res-body"></tbody>
-        </table>
-    </div>
-    <button class="btn" style="margin-top: 20px; width:250px; background:var(--primary);" onclick="location.reload()">Terug naar Menu</button>
+    <h2>Overzicht</h2>
+    <div style="width: 80%; max-height: 70vh; overflow-y: auto;"><table style="background:#1e1e1e;"><tbody id="res-body"></tbody></table></div>
+    <button class="btn" style="margin-top: 20px; width:200px;" onclick="location.reload()">Menu</button>
 </div>
 
 <script>
 const dataBibliotheek = {
-    "ecologie": {
-        "titel": "L'Environnement et l'Écologie",
-        "woorden": [
-            {"fr": "la protection de l'environnement", "nl": "de bescherming van het milieu"}, {"fr": "sauver le climat", "nl": "het klimaat redden"}, {"fr": "le respect de la nature", "nl": "het respect voor de natuur"}, {"fr": "préserver les écosystèmes", "nl": "de ecosystemen beschermen"}, {"fr": "le développement durable", "nl": "de duurzame ontwikkeling"}, {"fr": "l'économie verte", "nl": "de groene economie"}, {"fr": "le recyclage", "nl": "het recycleren"}, {"fr": "trier les déchets", "nl": "het afval sorteren"}, {"fr": "le zéro déchet", "nl": "zero waste"}, {"fr": "biodégradable", "nl": "biologisch afbreekbaar"}, {"fr": "le changement climatique", "nl": "de klimaatverandering"}, {"fr": "la déforestation", "nl": "de ontbossing"}, {"fr": "toxique", "nl": "giftig"}, {"fr": "le réchauffement climatique", "nl": "de opwarming van de aarde"}, {"fr": "la canicule", "nl": "de hittegolf"}, {"fr": "la pollution atmosphérique", "nl": "de luchtvervuiling"}, {"fr": "les particules fines", "nl": "het fijn stof"}, {"fr": "les émissions de CO2", "nl": "de CO2 uitstoot"}, {"fr": "l'énergie renouvelable", "nl": "de hernieuwbare energie"}, {"fr": "une inondation", "nl": "een overstroming"}, {"fr": "une tempête", "nl": "een storm"}, {"fr": "un incendie", "nl": "een brand"}, {"fr": "installer des panneaux solaires", "nl": "zonnepanelen installeren"}, {"fr": "investir dans des éoliennes", "nl": "windmolens"}, {"fr": "faire du covoiturage", "nl": "carpoolen"}
-        ]
-    },
-    "mobilite": {
-        "titel": "La Mobilité et le Transport",
-        "woorden": [
-            {"fr": "se déplacer", "nl": "zich verplaatsen"}, {"fr": "un moyen de transport", "nl": "een vervoermiddel"}, {"fr": "le transport en commun", "nl": "openbaar vervoer"}, {"fr": "la piste cyclable", "nl": "het fietspad"}, {"fr": "la trottinette électrique", "nl": "de elektrische step"}, {"fr": "le passage pour piétons", "nl": "het zebrapad"}, {"fr": "la borne de recharge", "nl": "de laadpaal"}, {"fr": "le covoiturage", "nl": "het carpoolen"}, {"fr": "le permis de conduire", "nl": "het rijbewijs"}, {"fr": "les embouteillages", "nl": "de files"}, {"fr": "la mobilité durable", "nl": "duurzame mobiliteit"}, {"fr": "la sécurité routière", "nl": "verkeersveiligheid"}, {"fr": "limiter la vitesse", "nl": "snelheid beperken"}, {"fr": "le code de la route", "nl": "verkeersreglement"}, {"fr": "le retard", "nl": "de vertraging"}, {"fr": "la correspondance", "nl": "de aansluiting"}, {"fr": "changer de train", "nl": "overstappen"}, {"fr": "décoller", "nl": "opstijgen"}, {"fr": "atterrir", "nl": "landen"}, {"fr": "faire le plein", "nl": "tanken"}, {"fr": "le rond-point", "nl": "het rondpunt"}, {"fr": "les travaux routiers", "nl": "wegenwerken"}, {"fr": "faire la navette", "nl": "pendelen"}, {"fr": "le pare-brise", "nl": "de voorruit"}, {"fr": "un usager faible", "nl": "een zwakke weggebruiker"}
-        ]
-    },
-    "pelckmans": {
-        "titel": "Grote Woordenlijst (Pelckmans)",
-        "woorden": [
-            {"fr": "l'offre exceptionnelle", "nl": "de uitzonderlijke aanbieding"}, {"fr": "ajouter au panier", "nl": "aan het winkelmandje toevoegen"}, {"fr": "l'arrivée", "nl": "de aankomst"}, {"fr": "faire la queue", "nl": "aanschuiven"}, {"fr": "l'abonnement", "nl": "het abonnement"}, {"fr": "activer", "nl": "activeren"}, {"fr": "le montant", "nl": "het bedrag"}, {"fr": "sauvegarder", "nl": "bewaren/opslaan"}, {"fr": "commander", "nl": "bestellen"}, {"fr": "le paiement", "nl": "de betaling"}, {"fr": "le budget", "nl": "het budget"}, {"fr": "le cadeau", "nl": "het cadeau"}, {"fr": "numérique", "nl": "digitaal"}, {"fr": "télécharger", "nl": "downloaden"}, {"fr": "efficace", "nl": "efficiënt"}, {"fr": "l'évènement", "nl": "het evenement"}, {"fr": "félicitations", "nl": "gefeliciteerd"}, {"fr": "gratuit", "nl": "gratis"}, {"fr": "réutilisable", "nl": "herbruikbaar"}, {"fr": "la frontière", "nl": "de grens"}, {"fr": "la capitale", "nl": "de hoofdstad"}, {"fr": "l'information", "nl": "de informatie"}, {"fr": "la valise", "nl": "de koffer"}, {"fr": "la réduction", "nl": "de korting"}, {"fr": "le lien", "nl": "de link"}, {"fr": "le mot de passe", "nl": "het paswoord"}, {"fr": "recycler", "nl": "recycleren"}, {"fr": "la réservation", "nl": "de reservatie"}, {"fr": "respecter", "nl": "respecteren"}, {"fr": "gaspiller", "nl": "verspillen"}, {"fr": "polluer", "nl": "vervuilen"}, {"fr": "le tour du monde", "nl": "de wereldreis"}, {"fr": "se connecter", "nl": "zich aanmelden"}, {"fr": "allumer zijn gsm", "nl": "zijn gsm aanzetten"}
-        ]
-    }
+    "ecologie": [
+        {"fr":"la protection de l'environnement","nl":"de bescherming van het milieu"},{"fr":"sauver le climat","nl":"het klimaat redden"},{"fr":"le respect de la nature","nl":"het respect voor de natuur"},{"fr":"la sauvegarde de la biodiversité","nl":"het beschermen van de biodiversiteit"},{"fr":"préserver les écosystèmes","nl":"de ecosystemen beschermen"},{"fr":"les écologistes","nl":"de groenen (politiek)"},{"fr":"le développement durable","nl":"de duurzame ontwikkeling"},{"fr":"l'économie verte","nl":"de groene economie"},{"fr":"un défi environnemental","nl":"een uitdaging voor het milieu"},{"fr":"le recyclage","nl":"het recycleren"},{"fr":"trier les déchets","nl":"het afval sorteren"},{"fr":"le tri sélectief","nl":"het sorteren"},{"fr":"le zéro déchet","nl":"zero waste"},{"fr":"biodégradable","nl":"biologisch afbreekbaar"},{"fr":"le changement climatique","nl":"de klimaatverandering"},{"fr":"le désastre écologique","nl":"de ecologische ramp"},{"fr":"polluer","nl":"vervuilen"},{"fr":"la déforestation","nl":"de ontbossing"},{"fr":"toxique","nl":"giftig"},{"fr":"le réchauffement climatique","nl":"de opwarming van de aarde"},{"fr":"la canicule","nl":"de hittegolf"},{"fr":"la pollution atmosphérique","nl":"de luchtvervuiling"},{"fr":"les particules fines","nl":"het fijn stof"},{"fr":"les émissions de CO2","nl":"de CO2 uitstoot"},{"fr":"l'énergie renouvelable","nl":"de hernieuwbare energie"},{"fr":"une inondation","nl":"een overstroming"},{"fr":"une tempête","nl":"een storm"},{"fr":"un incendie","nl":"een brand"},{"fr":"installer des panneaux solaires","nl":"zonnepanelen installeren"},{"fr":"investir dans des éoliennes","nl":"investeren in windmolens"},{"fr":"faire du covoiturage","nl":"carpoolen"},{"fr":"trier ses déchets","nl":"zijn afval sorteren"},{"fr":"éviter le gaspillage","nl":"verspilling tegengaan"},{"fr":"acheter des produits bio","nl":"producten met een biolabel kopen"},{"fr":"la sauvegarde","nl":"de bescherming"},{"fr":"contaminer","nl":"verontreinigen"},{"fr":"néfaste","nl":"schadelijk"},{"fr":"mettre en gevaar","nl":"in gevaar brengen"},{"fr":"la toxicité","nl":"de giftigheid"},{"fr":"la fonte des neiges","nl":"het smelten van de sneeuw"},{"fr":"la sécheresse","nl":"de droogte"},{"fr":"la hausse du niveau des mers","nl":"het stijgen van de zeespiegel"},{"fr":"l'air est pollué","nl":"de lucht is vervuild"},{"fr":"les déchets industriels","nl":"het afval van de industrie"},{"fr":"l'extinction","nl":"de uitroeiing"},{"fr":"la pénurie","nl":"het tekort"},{"fr":"le nucléaire","nl":"de kernenergie"},{"fr":"la transition énergétique","nl":"de energetische overgang"},{"fr":"les intempéries","nl":"het noodweer"},{"fr":"un tremblement de terre","nl":"een aardbeving"},{"fr":"un séisme","nl":"een aardbeving"},{"fr":"récupérer l'eau de pluie","nl":"regenwater opvangen"},{"fr":"la surconsommation","nl":"overconsumptie"},{"fr":"les écolos","nl":"de groenen"},{"fr":"l'économie durable","nl":"duurzame economie"},{"fr":"les emballages superflus","nl":"overbodige verpakkingen"},{"fr":"le plastique à usage unique","nl":"wegwerpplastic"},{"fr":"modifier ses habitudes","nl":"gewoontes aanpassen"},{"fr":"la contamination","nl":"de verontreiniging"},{"fr":"nocif pour la santé","nl":"schadelijk voor de gezondheid"},{"fr":"inoffensif","nl":"onschadelijk"},{"fr":"la dangerosité","nl":"de gevaarlijkheid"},{"fr":"les glaciers","nl":"de ijskappen"},{"fr":"augmenter","nl":"stijgen"},{"fr":"la pollution marine","nl":"de zeevervuiling"},{"fr":"la mauvaise qualité de l'air","nl":"slechte luchtkwaliteit"},{"fr":"émettre","nl":"uitstoten"},{"fr":"le pic de pollution","nl":"vervuilingspiek"},{"fr":"la chaîne alimentaire","nl":"de voedselketen"},{"fr":"les espèces menacées","nl":"bedreigde diersoorten"},{"fr":"la radioactivité","nl":"radioactiviteit"},{"fr":"les déchets radioactifs","nl":"radioactief afval"},{"fr":"l'énergie fossile","nl":"fossiele brandstoffen"},{"fr":"des pluies diluviennes","nl":"stortregens"},{"fr":"un ouragan","nl":"een orkaan"},{"fr":"une coulée de boue","nl":"een modderstroom"},{"fr":"prendre des mesures","nl":"maatregelen nemen"},{"fr":"réduire la pollution","nl":"vervuiling verminderen"},{"fr":"sauvegarder la planète","nl":"de planeet beschermen"},{"fr":"le respect","nl":"het respect"},{"fr":"préserver","nl":"beschermen"},{"fr":"le recyclage","nl":"het recycleren"},{"fr":"récupérer","nl":"hergebruiken"},{"fr":"diminuer les déchets","nl":"afval verminderen"},{"fr":"modifier","nl":"aanpassen"},{"fr":"l'atmosphère","nl":"de atmosfeer"},{"fr":"l'ozone","nl":"de ozonlaag"},{"fr":"la protection","nl":"de bescherming"},{"fr":"écologique","nl":"ecologisch"},{"fr":"l'environnement","nl":"het milieu"},{"fr":"sauver","nl":"redden"},{"fr":"la biodiversité","nl":"de biodiversiteit"},{"fr":"un écosystème","nl":"een ecosysteem"},{"fr":"durable","nl":"duurzaam"},{"fr":"l'écologie","nl":"de ecologie"},{"fr":"trier","nl":"sorteren"},{"fr":"le tri","nl":"het sorteren"},{"fr":"zéro déchet","nl":"geen afval"},{"fr":"le climat","nl":"het klimaat"},{"fr":"la fonte","nl":"het smelten"},{"fr":"la hausse","nl":"de stijging"},{"fr":"la mer","nl":"de zee"},{"fr":"polluer","nl":"vervuilen"},{"fr":"les sols","nl":"de grond"},{"fr":"les ressources","nl":"de bronnen"},{"fr":"l'énergie","nl":"de energie"},{"fr":"renouvelable","nl":"hernieuwbaar"},{"fr":"nucléaire","nl":"kernenergie"},{"fr":"le déchet","nl":"het afval"},{"fr":"fossile","nl":"fossiel"}
+    ],
+    "mobilite": [
+        {"fr":"se déplacer","nl":"zich verplaatsen"},{"fr":"un moyen de transport","nl":"een vervoermiddel"},{"fr":"le transport en commun","nl":"het openbaar vervoer"},{"fr":"la voiture","nl":"de auto"},{"fr":"le bus","nl":"de bus"},{"fr":"le tram","nl":"de tram"},{"fr":"le métro","nl":"de metro"},{"fr":"le train","nl":"de trein"},{"fr":"le vélo","nl":"de fiets"},{"fr":"à vélo","nl":"met de fiets"},{"fr":"le cycliste","nl":"de fietser"},{"fr":"la piste cyclable","nl":"het fietspad"},{"fr":"le vélo partagé","nl":"de deelfiets"},{"fr":"la trottinette","nl":"de step"},{"fr":"la marche","nl":"het wandelen"},{"fr":"à pied","nl":"te voet"},{"fr":"le piéton","nl":"de voetganger"},{"fr":"le passage pour piétons","nl":"het zebrapad"},{"fr":"le trottoir","nl":"het voetpad"},{"fr":"la voiture électrique","nl":"de elektrische auto"},{"fr":"la borne de recharge","nl":"de laadpaal"},{"fr":"le covoiturage","nl":"het carpoolen"},{"fr":"le conducteur","nl":"de bestuurder"},{"fr":"le passager","nl":"de passagier"},{"fr":"le permis de conduire","nl":"het rijbewijs"},{"fr":"la circulation","nl":"het verkeer"},{"fr":"le trafic","nl":"het verkeer"},{"fr":"les embouteillages","nl":"de files"},{"fr":"les bouchons","nl":"de files"},{"fr":"être coincé","nl":"in de file staan"},{"fr":"la pollution","nl":"de vervuiling"},{"fr":"les émissions de CO2","nl":"de CO2-uitstoot"},{"fr":"l'impact écologique","nl":"de ecologische impact"},{"fr":"durable","nl":"duurzaam"},{"fr":"la mobilité durable","nl":"de duurzame mobiliteit"},{"fr":"l'alternative","nl":"het alternatief"},{"fr":"le trajet","nl":"de rit"},{"fr":"la distance","nl":"de afstand"},{"fr":"la sécurité routière","nl":"de verkeersveiligheid"},{"fr":"l'accident","nl":"het ongeval"},{"fr":"la vitesse","nl":"de snelheid"},{"fr":"limiter la vitesse","nl":"de snelheid beperken"},{"fr":"le code de la route","nl":"het verkeersreglement"},{"fr":"le panneau","nl":"het verkeersbord"},{"fr":"les feux","nl":"de verkeerslichten"},{"fr":"le carrefour","nl":"het kruispunt"},{"fr":"la rue","nl":"de straat"},{"fr":"la route","nl":"de weg"},{"fr":"l'autoroute","nl":"de autosnelweg"},{"fr":"le parking","nl":"de parking"},{"fr":"se garer","nl":"parkeren"},{"fr":"stationner","nl":"parkeren"},{"fr":"le voyage","nl":"de reis"},{"fr":"voyager","nl":"reizen"},{"fr":"la gare","nl":"het station"},{"fr":"l'arrêt de bus","nl":"de bushalte"},{"fr":"le quai","nl":"het perron"},{"fr":"le guichet","nl":"het loket"},{"fr":"le billet","nl":"het ticket"},{"fr":"le contrôleur","nl":"de conducteur"},{"fr":"le retard","nl":"de vertraging"},{"fr":"avoir du retard","nl":"vertraging hebben"},{"fr":"la correspondance","nl":"de aansluiting"},{"fr":"changer de train","nl":"overstappen"},{"fr":"l'aéroport","nl":"de luchthaven"},{"fr":"l'avion","nl":"het vliegtuig"},{"fr":"le pilote","nl":"de piloot"},{"fr":"le vol","nl":"de vlucht"},{"fr":"décoller","nl":"opstijgen"},{"fr":"atterrir","nl":"landen"},{"fr":"le port","nl":"de haven"},{"fr":"le bateau","nl":"de boot"},{"fr":"le navire","nl":"het schip"},{"fr":"la traversée","nl":"de overtocht"},{"fr":"links afslaan","nl":"tourner à gauche"},{"fr":"wachten voor het rood licht","nl":"attendre aux feux rouges"},{"fr":"het rijbewijs behalen","nl":"passer le permis"},{"fr":"het rondpunt","nl":"le rond-point"},{"fr":"de controle verliezen","nl":"perdre le contrôle"},{"fr":"wegenwerken","nl":"les travaux routiers"},{"fr":"pendelen","nl":"faire la navette"},{"fr":"het intrekken van het rijbewijs","nl":"le retrait du permis"},{"fr":"claxonneren","nl":"klaxonner"},{"fr":"de omleiding volgen","nl":"suivre la déviation"},{"fr":"de voorruit","nl":"le pare-brise"},{"fr":"stappen","nl":"marcher"},{"fr":"omvergereden worden","nl":"se faire renverser"},{"fr":"vertragen","nl":"ralentir"},{"fr":"remmen","nl":"freiner"},{"fr":"de straat oversteken","nl":"traverser la rue"},{"fr":"een aanrijding","nl":"une collision"},{"fr":"een fluovestje dragen","nl":"porter un gilet fluo"},{"fr":"een zwakke weggebruiker","nl":"un usager faible"},{"fr":"een lekke band","nl":"le pneu crevé"},{"fr":"de bakfiets","nl":"le vélo cargo"},{"fr":"de buschauffeur","nl":"le chauffeur de bus"},{"fr":"een cruise maken","nl":"faire une croisière"},{"fr":"slippen","nl":"déraper"},{"fr":"stiptheid","nl":"la ponctualité"},{"fr":"de rechtstreekse verbinding","nl":"la ligne directe"},{"fr":"achteruitrijden","nl":"reculer"},{"fr":"tanken","nl":"faire le plein"},{"fr":"de ketting","nl":"la chaîne"},{"fr":"starten","nl":"démarrer"},{"fr":"de achteruitkijkspiegel","nl":"le rétroviseur"},{"fr":"het stuurwiel","nl":"le volant"},{"fr":"de rijinstructeur","nl":"le moniteur"},{"fr":"het praktijkexamen","nl":"l'examen pratique"},{"fr":"varen","nl":"naviguer"},{"fr":"door het rood rijden","nl":"brûler un feu rouge"},{"fr":"zichtbaar zijn","nl":"être visible"},{"fr":"de reizigers","nl":"les passagers"},{"fr":"een automobilist","nl":"un automobiliste"},{"fr":"de dienstregeling raadplegen","nl":"consulter les horaires"},{"fr":"een helm dragen","nl":"porter un casque"},{"fr":"zich begeven naar","nl":"se rendre à"},{"fr":"de grens oversteken","nl":"traverser la frontière"},{"fr":"de hulpdiensten bellen","nl":"appeler les secours"},{"fr":"trappen","nl":"pédaler"},{"fr":"uitstappen","nl":"descendre"},{"fr":"een boete","nl":"une amende"},{"fr":"de bedrijfswagen","nl":"la voiture de société"},{"fr":"het slot","nl":"le cadenas"}
+    ],
+    "pelckmans": [
+        {"fr":"l'offre exceptionnelle","nl":"de aanbieding"},{"fr":"ajouter au panier","nl":"aan het winkelmandje toevoegen"},{"fr":"l'arrivée","nl":"de aankomst"},{"fr":"faire la queue","nl":"aanschuiven"},{"fr":"brancher","nl":"aansluiten"},{"fr":"l'abonnement","nl":"het abonnement"},{"fr":"activer","nl":"activeren"},{"fr":"l'adaptateur","nl":"de adapter"},{"fr":"la dimension","nl":"de afmeting"},{"fr":"les déchets ménagers","nl":"het huishoudelijk afval"},{"fr":"les eaux usées","nl":"het afvalwater"},{"fr":"le spray antimoustiques","nl":"de antimuggenspray"},{"fr":"l'appli","nl":"de app"},{"fr":"l'article commandé","nl":"het artikel"},{"fr":"la baie","nl":"de baai"},{"fr":"la baignade","nl":"het baden"},{"fr":"la serviette de plage","nl":"het badlaken"},{"fr":"la batterie","nl":"de batterij"},{"fr":"le montant","nl":"het bedrag"},{"fr":"l'image","nl":"het beeld"},{"fr":"l'enterrement","nl":"de begrafenis"},{"fr":"limiter","nl":"beperken"},{"fr":"être joignable","nl":"bereikbaar zijn"},{"fr":"endommagé","nl":"beschadigd"},{"fr":"la protection","nl":"de bescherming"},{"fr":"être disponible","nl":"beschikbaar zijn"},{"fr":"commander","nl":"bestellen"},{"fr":"la commande","nl":"de bestelling"},{"fr":"Meilleurs voeux!","nl":"Beste wensen!"},{"fr":"le paiement","nl":"de betaling"},{"fr":"le règlement","nl":"de afrekening"},{"fr":"valider","nl":"bevestigen"},{"fr":"sauvegarder","nl":"bewaren/opslaan"},{"fr":"le blog","nl":"de blog"},{"fr":"embarquer","nl":"boarden"},{"fr":"le bouquet de fleurs","nl":"het boeket bloemen"},{"fr":"le message","nl":"het bericht"},{"fr":"le budget","nl":"het budget"},{"fr":"le cadeau","nl":"het cadeau"},{"fr":"le camping","nl":"de camping"},{"fr":"le tchat","nl":"de chat"},{"fr":"la communication","nl":"de communicatie"},{"fr":"le compost","nl":"de compost"},{"fr":"les confettis","nl":"de confetti"},{"fr":"payer au comptant","nl":"contant betalen"},{"fr":"créer","nl":"creëren"},{"fr":"la piste de danse","nl":"de dansvloer"},{"fr":"la source","nl":"de bron"},{"fr":"le drapeau tricolore","nl":"de Franse driekleur"},{"fr":"le JT","nl":"het journaal"},{"fr":"baisser le son","nl":"de klank stiller zetten"},{"fr":"la falaise","nl":"de klif"},{"fr":"la devise","nl":"de leuze"},{"fr":"le mont Blanc","nl":"de Mont Blanc"},{"fr":"le département","nl":"het departement"},{"fr":"le S.A.V.","nl":"de dienst na verkoop"},{"fr":"numérique","nl":"digitaal"},{"fr":"la boule disco","nl":"de discobal"},{"fr":"le DJ","nl":"de dj"},{"fr":"le but","nl":"het doel"},{"fr":"le public cible","nl":"de doelgroep"},{"fr":"télécharger","nl":"downloaden"},{"fr":"appuyer sur","nl":"drukken op"},{"fr":"l'écologie","nl":"de ecologie"},{"fr":"prendre un abonnement","nl":"een abonnement nemen"},{"fr":"lire un journal en ligne","nl":"een krant online lezen"},{"fr":"efficace","nl":"efficiënt"},{"fr":"l'électricité","nl":"de elektriciteit"},{"fr":"l'e-mail","nl":"de e-mail"},{"fr":"l'énergie","nl":"de energie"},{"fr":"l'évènement","nl":"het evenement"},{"fr":"fabriquer","nl":"fabriceren"},{"fr":"la soirée","nl":"het feest"},{"fr":"faire la fête","nl":"feesten"},{"fr":"le repas de fête","nl":"het feestmaal"},{"fr":"la salle des fêtes","nl":"de feestzaal"},{"fr":"la particule","nl":"het fijne deeltje"},{"fr":"Bonnes vacances!","nl":"Fijne vakantie!"},{"fr":"le forum","nl":"het forum"},{"fr":"le photomaton","nl":"de fotocabine"},{"fr":"la fraude","nl":"de fraude"},{"fr":"la boum","nl":"de fuif"},{"fr":"l'emploi","nl":"het gebruik"},{"fr":"se servir de","nl":"gebruikmaken van"},{"fr":"Félicitations!","nl":"Gefeliciteerd!"},{"fr":"gagner de l'argent","nl":"geld verdienen"},{"fr":"l'occasion","nl":"de gelegenheid"},{"fr":"Bonne fête!","nl":"Gelukkige feestdag!"},{"fr":"Joyeux anniversaire!","nl":"Gelukkige verjaardag!"},{"fr":"Bonne année!","nl":"Gelukkig Nieuwjaar!"},{"fr":"le poids","nl":"het gewicht"},{"fr":"bon marché","nl":"goedkoop"},{"fr":"gratuit","nl":"gratis"},{"fr":"la frontière","nl":"de grens"},{"fr":"le sol","nl":"de grond"},{"fr":"les bagages à main","nl":"de handbagage"},{"fr":"le hashtag","nl":"de hashtag"},{"fr":"réutilisable","nl":"herbruikbaar"},{"fr":"rechargeable","nl":"herlaadbaar"},{"fr":"la fête nationale","nl":"de nationale feestdag"},{"fr":"le gouvernement","nl":"de regering"},{"fr":"l'État","nl":"de staat"},{"fr":"l'hymne national","nl":"het volkslied"},{"fr":"la capitale","nl":"de hoofdstad"},{"fr":"les TIC","nl":"de ICT"},{"fr":"la carte d'identité","nl":"de identiteitskaart"},{"fr":"le thé glacé","nl":"de ijsthee"},{"fr":"en vrac","nl":"in bulk"},{"fr":"enregistrer","nl":"inchecken"},{"fr":"à proximité","nl":"in de buurt"},{"fr":"l'information","nl":"de informatie"},{"fr":"le renseignement","nl":"de inlichting"},{"fr":"innovant","nl":"innoverend"},{"fr":"insérer","nl":"insteken"},{"fr":"en stock","nl":"in stock"},{"fr":"international","nl":"internationaal"},{"fr":"l'interview","nl":"het interview"},{"fr":"le journaliste","nl":"de journalist"},{"fr":"la bougie","nl":"de kaars"},{"fr":"le camping sauvage","nl":"wildkamperen"},{"fr":"le château","nl":"het kasteel"},{"fr":"le sapin de Noël","nl":"de kerstboom"},{"fr":"cliquer","nl":"klikken"},{"fr":"le bouton","nl":"de knop"},{"fr":"la valise","nl":"de koffer"},{"fr":"la boussole","nl":"het kompas"},{"fr":"le roi","nl":"de koning"},{"fr":"le royaume","nl":"het koninkrijk"},{"fr":"l'acheteur","nl":"de koper"},{"fr":"la réduction","nl":"de korting"},{"fr":"le chargeur","nl":"de lader"},{"fr":"le délai de livraison","nl":"de leveringstermijn"},{"fr":"le lien","nl":"de link"},{"fr":"loger","nl":"logeren"},{"fr":"le nom de l'utilisateur","nl":"de login"},{"fr":"bruyant","nl":"luidruchtig"},{"fr":"la notification","nl":"de melding"},{"fr":"à l'aide de","nl":"met behulp van"},{"fr":"le milieu","nl":"het milieu"},{"fr":"Moederdag","nl":"la fête des Mères"},{"fr":"suivre l'actualité","nl":"op de hoogte blijven"},{"fr":"le colis","nl":"het pakket"},{"fr":"le mot de passe","nl":"het paswoord"},{"fr":"la planète","nl":"de planeet"},{"fr":"la politique","nl":"de politiek"},{"fr":"le public","nl":"het publiek"},{"fr":"la réception","nl":"de receptie"},{"fr":"la pub","nl":"de reclame"},{"fr":"recyclable","nl":"recycleerbaar"},{"fr":"régional","nl":"regionaal"},{"fr":"la république","nl":"de republiek"},{"fr":"la révolution","nl":"de revolutie"},{"fr":"le sac à dos","nl":"de rugzak"},{"fr":"simple","nl":"eenvoudig"},{"fr":"la guirlande","nl":"de slinger"},{"fr":"le smartphone","nl":"de gsm"},{"fr":"de sociale netwerken","nl":"les réseaux sociaux"},{"fr":"het sorteren","nl":"le tri"},{"fr":"Succes!","nl":"Bonne chance!"},{"fr":"le symbole","nl":"het symbool"},{"fr":"le système","nl":"het systeem"},{"fr":"le signe","nl":"het teken"},{"fr":"l'appareil","nl":"het toestel"},{"fr":"inviter","nl":"uitnodigen"},{"fr":"le point de vue","nl":"het uitzicht"},{"fr":"Vaderdag","nl":"la fête des Pères"},{"fr":"de gîte","nl":"le gîte"},{"fr":"de vallei","nl":"la vallée"},{"fr":"polluer","nl":"vervuilen"},{"fr":"le pollueur","nl":"de vervuiler"},{"fr":"célébrer","nl":"vieren"},{"fr":"voler","nl":"vliegen"},{"fr":"le volume","nl":"het volume"},{"fr":"sale","nl":"vuil"},{"fr":"souhaiter","nl":"wensen"},{"fr":"le tour du monde","nl":"de wereldreis"},{"fr":"zapper","nl":"zappen"},{"fr":"de zender","nl":"la chaîne"},{"fr":"se connecter","nl":"zich aanmelden"}
+    ]
 };
 
 let allSets = [];
 let currentSetIdx = 0, wordIdx = 0, timeLeft = 8, isPaused = false, interval;
 
 function laadThema(themaKey) {
-    const thema = dataBibliotheek[themaKey];
-    document.querySelector('h1').innerText = thema.titel;
-    const woorden = thema.woorden;
+    const woorden = dataBibliotheek[themaKey];
     allSets = [];
     
-    // Dynamische sets van 14 met overlap van 9
+    // LOGICA: 14 per set, 9 nieuwe (stap van 9), 5 overlap
+    // Set 1: 0-14, Set 2: 9-23, Set 3: 18-32...
     for (let i = 0; i < 10; i++) {
         let start = i * 9;
         let set = woorden.slice(start, start + 14);
-        if (set.length > 5) allSets.push(set); 
+        if (set.length > 0) allSets.push(set);
     }
     renderMenu();
 }
@@ -135,10 +102,10 @@ function renderMenu() {
         const card = document.createElement('div');
         card.className = 'set-card';
         card.innerHTML = `
-            <h3 style="margin-top:0;">Série ${i+1}</h3>
-            <p style="color:#888; font-size:13px;">${set.length} woorden</p>
-            <button class="btn" onclick="startSet(${i})">🚀 Starten</button>
-            <button class="btn btn-edit" onclick="openEditor(${i})">⚙ Bewerken</button>
+            <h3>Série ${i+1}</h3>
+            <p style="color:#888;">${set.length} woorden</p>
+            <button class="btn" onclick="startSet(${i})">🚀 Start</button>
+            <button class="btn btn-edit" onclick="openEditor(${i})">⚙ Bewerk</button>
         `;
         grid.appendChild(card);
     });
@@ -147,19 +114,18 @@ function renderMenu() {
 function openEditor(idx) {
     currentSetIdx = idx;
     const tbody = document.getElementById('edit-tbody');
-    document.getElementById('modal-title').innerText = `Serie ${idx+1} aanpassen`;
+    document.getElementById('modal-title').innerText = `Serie ${idx+1}`;
     tbody.innerHTML = allSets[idx].map((w, i) => `
         <tr>
-            <td><input type="text" value="${w.nl}" onchange="updateWord(${i}, 'nl', this.value)"></td>
-            <td><input type="text" value="${w.fr}" onchange="updateWord(${i}, 'fr', this.value)"></td>
+            <td><input type="text" value="${w.nl}" onchange="allSets[${idx}][${i}].nl = this.value"></td>
+            <td><input type="text" value="${w.fr}" onchange="allSets[${idx}][${i}].fr = this.value"></td>
         </tr>
     `).join('');
     document.getElementById('modal').style.display = 'flex';
 }
 
-function updateWord(wIdx, lang, val) { allSets[currentSetIdx][wIdx][lang] = val; }
 function saveAndClose() { document.getElementById('modal').style.display = 'none'; }
-function closeModal(e) { if(e.target.id === 'modal') document.getElementById('modal').style.display = 'none'; }
+function closeModal(e) { if(e.target.id==='modal') saveAndClose(); }
 
 function startSet(idx) {
     currentSetIdx = idx; wordIdx = 0;
@@ -171,9 +137,10 @@ function startSet(idx) {
 function nextWord() {
     const set = allSets[currentSetIdx];
     if (wordIdx >= set.length) { showResults(); return; }
-    timeLeft = 8; updateTimerBar();
+    timeLeft = 8; 
     document.getElementById('word-display').innerText = set[wordIdx].nl;
-    document.getElementById('info-fr').innerText = `Serie ${currentSetIdx+1} - Woord ${wordIdx+1} / ${set.length}`;
+    document.getElementById('info-fr').innerText = `Série ${currentSetIdx+1} — Woord ${wordIdx+1}/${set.length}`;
+    updateTimerBar();
 
     if (interval) clearInterval(interval);
     interval = setInterval(() => {
